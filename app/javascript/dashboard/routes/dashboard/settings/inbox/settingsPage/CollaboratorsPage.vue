@@ -29,6 +29,7 @@ export default {
       isAgentListUpdating: false,
       enableAutoAssignment: false,
       maxAssignmentLimit: null,
+      assignmentType: 'round_robin',
     };
   },
   computed: {
@@ -57,6 +58,8 @@ export default {
       this.enableAutoAssignment = this.inbox.enable_auto_assignment;
       this.maxAssignmentLimit =
         this.inbox?.auto_assignment_config?.max_assignment_limit || null;
+      this.assignmentType =
+        this.inbox?.auto_assignment_config?.assignment_type || 'round_robin';
       this.fetchAttachedAgents();
     },
     async fetchAttachedAgents() {
@@ -97,6 +100,7 @@ export default {
           enable_auto_assignment: this.enableAutoAssignment,
           auto_assignment_config: {
             max_assignment_limit: this.maxAssignmentLimit,
+            assignment_type: this.assignmentType,
           },
         };
         await this.$store.dispatch('inboxes/updateInbox', payload);
@@ -183,6 +187,30 @@ export default {
         <p class="pb-1 text-sm not-italic text-n-slate-11">
           {{ $t('INBOX_MGMT.AUTO_ASSIGNMENT.MAX_ASSIGNMENT_LIMIT_SUB_TEXT') }}
         </p>
+
+        <label class="flex flex-col gap-1 mt-4">
+          <span class="text-sm font-medium text-n-slate-12">
+            {{ $t('INBOX_MGMT.AUTO_ASSIGNMENT.ASSIGNMENT_TYPE') }}
+          </span>
+          <span class="mb-2 text-sm text-n-slate-11">
+            {{ $t('INBOX_MGMT.AUTO_ASSIGNMENT.ASSIGNMENT_TYPE_SUB_TEXT') }}
+          </span>
+          <select
+            v-model="assignmentType"
+            class="w-full p-2 border rounded-md border-n-strong bg-n-solid-1 text-n-slate-12"
+            @change="updateInbox"
+          >
+            <option value="round_robin">
+              {{ $t('INBOX_MGMT.AUTO_ASSIGNMENT.ROUND_ROBIN') }}
+            </option>
+            <option value="first_reply">
+              {{ $t('INBOX_MGMT.AUTO_ASSIGNMENT.FIRST_REPLY') }}
+            </option>
+            <option value="last_reply">
+              {{ $t('INBOX_MGMT.AUTO_ASSIGNMENT.LAST_REPLY') }}
+            </option>
+          </select>
+        </label>
 
         <NextButton
           :label="$t('INBOX_MGMT.SETTINGS_POPUP.UPDATE')"

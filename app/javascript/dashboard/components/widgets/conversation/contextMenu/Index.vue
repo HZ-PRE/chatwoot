@@ -143,7 +143,14 @@ export default {
       assignableAgentsUiFlags: 'inboxAssignableAgents/getUIFlags',
       currentUser: 'getCurrentUser',
       currentAccountId: 'getCurrentAccountId',
+      getInbox: 'inboxes/getInbox',
     }),
+    inbox() {
+      return this.getInbox(this.inboxId);
+    },
+    isAutoAssignmentEnabled() {
+      return this.inbox?.enable_auto_assignment ?? true;
+    },
     filteredAgentOnAvailability() {
       const agents = this.$store.getters[
         'inboxAssignableAgents/getAssignableAgents'
@@ -269,7 +276,7 @@ export default {
     </MenuItemWithSubmenu>
     <MenuItemWithSubmenu
       :option="agentMenuConfig"
-      :sub-menu-available="!!assignableAgents.length"
+      :sub-menu-available="!!assignableAgents.length && isAutoAssignmentEnabled"
     >
       <AgentLoadingPlaceholder v-if="assignableAgentsUiFlags.isFetching" />
       <template v-else>

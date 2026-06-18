@@ -612,7 +612,12 @@
     "AUTO_ASSIGNMENT": {
       "MAX_ASSIGNMENT_LIMIT": "Auto assignment limit",
       "MAX_ASSIGNMENT_LIMIT_RANGE_ERROR": "Please enter a value greater than 0",
-      "MAX_ASSIGNMENT_LIMIT_SUB_TEXT": "Limit the maximum number of conversations from this inbox that can be auto assigned to an agent"
+      "MAX_ASSIGNMENT_LIMIT_SUB_TEXT": "Limit the maximum number of conversations from this inbox that can be auto assigned to an agent",
+      "ASSIGNMENT_TYPE": "Assignment type",
+      "ASSIGNMENT_TYPE_SUB_TEXT": "Choose how conversations are distributed to agents",
+      "ROUND_ROBIN": "Round Robin",
+      "FIRST_REPLY": "First Reply",
+      "LAST_REPLY": "Last Reply"
     },
     "FACEBOOK_REAUTHORIZE": {
       "TITLE": "Reauthorize",

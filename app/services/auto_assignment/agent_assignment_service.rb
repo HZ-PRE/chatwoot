@@ -4,8 +4,10 @@ class AutoAssignment::AgentAssignmentService
   # examples: Agents with assignment capacity, Agents who are members of a team etc
   pattr_initialize [:conversation!, :allowed_agent_ids!]
 
+  ASSIGNMENT_TYPES = %w[round_robin first_reply last_reply].freeze
+
   def find_assignee
-    round_robin_manage_service.available_agent(allowed_agent_ids: allowed_online_agent_ids)
+    assignment_service.find_assignee
   end
 
   def perform
@@ -15,24 +17,41 @@ class AutoAssignment::AgentAssignmentService
 
   private
 
-  def online_agent_ids
-    online_agents = OnlineStatusTracker.get_available_users(conversation.account_id)
-    online_agents.select { |_key, value| value.eql?('online') }.keys if online_agents.present?
+  def assignment_type
+    config = conversation.inbox.auto_assignment_config || {}
+    type = config['assignment_type'] || 'round_robin'
+    ASSIGNMENT_TYPES.include?(type) ? type : 'round_robin'
   end
 
-  def allowed_online_agent_ids
-    # We want to perform roundrobin only over online agents
-    # Hence taking an intersection of online agents and allowed member ids
-
-    # the online user ids are string, since its from redis, allowed member ids are integer, since its from active record
-    @allowed_online_agent_ids ||= online_agent_ids & allowed_agent_ids&.map(&:to_s)
+  def assignment_service
+    case assignment_type
+    when 'first_reply'
+      AutoAssignment::FirstReplyAssignmentService.new(
+        conversation: conversation,
+        allowed_agent_ids: allowed_agent_ids
+      )
+    when 'last_reply'
+      AutoAssignment::LastReplyAssignmentService.new(
+        conversation: conversation,
+        allowed_agent_ids: allowed_agent_ids
+      )
+    else
+      round_robin_service
+    end
   end
 
-  def round_robin_manage_service
-    @round_robin_manage_service ||= AutoAssignment::InboxRoundRobinService.new(inbox: conversation.inbox)
-  end
+  def round_robin_service
+    @round_robin_service ||= Struct.new(:conversation, :allowed_agent_ids) do
+      def find_assignee
+        svc = AutoAssignment::InboxRoundRobinService.new(inbox: conversation.inbox)
+        svc.available_agent(allowed_agent_ids: allowed_online_agent_ids)
+      end
 
-  def round_robin_key
-    format(::Redis::Alfred::ROUND_ROBIN_AGENTS, inbox_id: conversation.inbox_id)
+      def allowed_online_agent_ids
+        online_ids = OnlineStatusTracker.get_available_users(conversation.account_id)
+        online_ids = online_ids.select { |_k, v| v == 'online' }.keys if online_ids.present?
+        online_ids & allowed_agent_ids&.map(&:to_s)
+      end
+    end.new(conversation, allowed_agent_ids)
   end
 end
