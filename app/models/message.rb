@@ -123,6 +123,8 @@ class Message < ApplicationRecord
   belongs_to :conversation, touch: true
   belongs_to :sender, polymorphic: true, optional: true
 
+  after_create_commit :run_reply_auto_assignment
+
   has_many :attachments, dependent: :destroy, autosave: true, before_add: :validate_attachments_limit
   has_one :csat_survey_response, dependent: :destroy_async
   has_many :notifications, as: :primary_actor, dependent: :destroy_async
@@ -399,6 +401,10 @@ class Message < ApplicationRecord
     # rubocop:disable Rails/SkipsModelValidations
     conversation.update_columns(last_activity_at: created_at)
     # rubocop:enable Rails/SkipsModelValidations
+  end
+
+  def run_reply_auto_assignment
+    ::AutoAssignment::MessageReplyAssignmentService.new(message: self).perform
   end
 end
 
