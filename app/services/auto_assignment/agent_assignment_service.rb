@@ -11,7 +11,18 @@ class AutoAssignment::AgentAssignmentService
   end
 
   def perform
+    Rails.logger.info(
+      "[AUTO_ASSIGNMENT] service=agent_assignment conversation_id=#{conversation.id} inbox_id=#{conversation.inbox_id} " \
+      "contact_id=#{conversation.contact_id} config=#{conversation.inbox.auto_assignment_config.inspect} " \
+      "assignment_type=#{assignment_type} allowed_agent_ids=#{allowed_agent_ids.inspect}"
+    )
+
     new_assignee = find_assignee
+
+    Rails.logger.info(
+      "[AUTO_ASSIGNMENT] service=agent_assignment conversation_id=#{conversation.id} selected_assignee_id=#{new_assignee&.id.inspect}"
+    )
+
     conversation.update(assignee: new_assignee) if new_assignee
   end
 

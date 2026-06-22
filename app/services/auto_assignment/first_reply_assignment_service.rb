@@ -10,7 +10,16 @@ class AutoAssignment::FirstReplyAssignmentService
 
   def find_assignee
     agent = first_reply_agent
-    return agent if agent.present?
+    if agent.present?
+      Rails.logger.info(
+        "[AUTO_ASSIGNMENT] service=first_reply conversation_id=#{conversation.id} strategy=matched candidate_user_id=#{agent.id}"
+      )
+      return agent
+    end
+
+    Rails.logger.info(
+      "[AUTO_ASSIGNMENT] service=first_reply conversation_id=#{conversation.id} strategy=fallback_round_robin allowed_online_agent_ids=#{allowed_online_agent_ids.inspect}"
+    )
 
     round_robin_service.available_agent(allowed_agent_ids: allowed_online_agent_ids)
   end
@@ -18,7 +27,14 @@ class AutoAssignment::FirstReplyAssignmentService
   private
 
   def first_reply_agent
-    candidate_agent_id = current_conversation_first_reply_agent_id || historical_first_reply_agent_id
+    current_candidate = current_conversation_first_reply_agent_id
+    historical_candidate = historical_first_reply_agent_id
+    candidate_agent_id = current_candidate || historical_candidate
+
+    Rails.logger.info(
+      "[AUTO_ASSIGNMENT] service=first_reply conversation_id=#{conversation.id} current_candidate=#{current_candidate.inspect} historical_candidate=#{historical_candidate.inspect} historical_conversation_ids=#{historical_conversation_ids.to_a.inspect} online_agent_ids=#{online_agent_ids.inspect}"
+    )
+
     return nil unless candidate_agent_id.present?
     return nil unless online_agent_id_set.include?(candidate_agent_id.to_s)
 
