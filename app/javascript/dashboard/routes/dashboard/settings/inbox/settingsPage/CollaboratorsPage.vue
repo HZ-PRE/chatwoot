@@ -27,7 +27,6 @@ export default {
     return {
       selectedAgents: [],
       isAgentListUpdating: false,
-      skipDefaults: false,
       enableAutoAssignment: false,
       maxAssignmentLimit: null,
       assignmentType: 'round_robin',
@@ -48,10 +47,6 @@ export default {
   },
   watch: {
     inbox() {
-      if (this.skipDefaults) {
-        this.skipDefaults = false;
-        return;
-      }
       this.setDefaults();
     },
   },
@@ -98,7 +93,6 @@ export default {
       this.isAgentListUpdating = false;
     },
     async updateInbox() {
-      this.skipDefaults = true;
       try {
         const payload = {
           id: this.inbox.id,
@@ -110,9 +104,14 @@ export default {
           },
         };
         await this.$store.dispatch('inboxes/updateInbox', payload);
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
+        useAlert(
+          this.$t('INBOX_MGMT.SETTINGS_POPUP.AUTO_ASSIGNMENT_SUCCESS_MESSAGE')
+        );
       } catch (error) {
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
+        this.setDefaults();
+        useAlert(
+          this.$t('INBOX_MGMT.SETTINGS_POPUP.AUTO_ASSIGNMENT_SUCCESS_MESSAGE')
+        );
       }
     },
   },

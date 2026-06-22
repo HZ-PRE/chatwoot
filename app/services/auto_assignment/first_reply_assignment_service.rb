@@ -1,32 +1,57 @@
+require 'set'
+
 class AutoAssignment::FirstReplyAssignmentService
-  # Assigns conversation to the agent who first replied in the conversation history
-  # Falls back to round-robin if no previous replies exist
+  # Assigns conversation to the first agent who replied.
+  # Priority:
+  # 1. First outgoing reply in the current conversation
+  # 2. First outgoing reply across this contact's conversation history in the inbox
+  # 3. Fallback to round-robin
   pattr_initialize [:conversation!, :allowed_agent_ids!]
 
   def find_assignee
-    agent_id = first_reply_agent_id
-    return inbox_member(agent_id) if agent_id.present?
+    agent = first_reply_agent
+    return agent if agent.present?
 
     round_robin_service.available_agent(allowed_agent_ids: allowed_online_agent_ids)
   end
 
   private
 
-  def first_reply_agent_id
-    replies = outgoing_replies_ordered
-    return nil if replies.blank?
+  def first_reply_agent
+    candidate_agent_id = current_conversation_first_reply_agent_id || historical_first_reply_agent_id
+    return nil unless candidate_agent_id.present?
+    return nil unless online_agent_id_set.include?(candidate_agent_id.to_s)
 
-    # Find the agent who sent the first outgoing reply that matches allowed agents
-    replies.each do |message|
-      next unless allowed_agent_ids.include?(message.sender_id)
+    inbox_member(candidate_agent_id)
+  end
+
+  def current_conversation_first_reply_agent_id
+    matching_agent_id_from_messages(conversation.messages.outgoing.order(created_at: :asc))
+  end
+
+  def historical_first_reply_agent_id
+    matching_agent_id_from_messages(historical_outgoing_messages.order(created_at: :asc))
+  end
+
+  def historical_outgoing_messages
+    Message.where(conversation_id: historical_conversation_ids).outgoing
+  end
+
+  def historical_conversation_ids
+    conversation.contact.conversations.where(inbox_id: conversation.inbox_id).where.not(id: conversation.id).select(:id)
+  end
+
+  def matching_agent_id_from_messages(messages)
+    messages.each do |message|
+      next unless allowed_agent_id_set.include?(message.sender_id)
 
       return message.sender_id
     end
     nil
   end
 
-  def outgoing_replies_ordered
-    conversation.messages.outgoing.order(created_at: :asc)
+  def allowed_agent_id_set
+    @allowed_agent_id_set ||= allowed_agent_ids.to_set
   end
 
   def allowed_online_agent_ids
@@ -35,7 +60,13 @@ class AutoAssignment::FirstReplyAssignmentService
 
   def online_agent_ids
     online_agents = OnlineStatusTracker.get_available_users(conversation.account_id)
-    online_agents.select { |_key, value| value.eql?('online') }.keys if online_agents.present?
+    return [] unless online_agents.present?
+
+    online_agents.select { |_key, value| value.eql?('online') }.keys
+  end
+
+  def online_agent_id_set
+    @online_agent_id_set ||= online_agent_ids.to_set
   end
 
   def round_robin_service
