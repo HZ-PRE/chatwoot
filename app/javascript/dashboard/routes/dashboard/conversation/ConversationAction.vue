@@ -66,7 +66,14 @@ export default {
       currentChat: 'getSelectedChat',
       currentUser: 'getCurrentUser',
       teams: 'teams/getTeams',
+      getInbox: 'inboxes/getInbox',
     }),
+    inbox() {
+      return this.getInbox(this.currentChat?.inbox_id);
+    },
+    canManuallyAssign() {
+      return this.inbox?.enable_auto_assignment === true;
+    },
     hasAnAssignedTeam() {
       return !!this.currentChat?.meta?.team;
     },
@@ -208,7 +215,7 @@ export default {
 
 <template>
   <div class="bg-n-background">
-    <div class="multiselect-wrap--small">
+    <div v-if="canManuallyAssign" class="multiselect-wrap--small">
       <ContactDetailsItem
         compact
         :title="$t('CONVERSATION_SIDEBAR.ASSIGNEE_LABEL')"

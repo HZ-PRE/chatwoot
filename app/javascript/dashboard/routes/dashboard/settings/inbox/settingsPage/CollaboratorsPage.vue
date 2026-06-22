@@ -174,7 +174,7 @@ export default {
         </p>
       </label>
 
-      <div v-if="enableAutoAssignment && isEnterprise" class="py-3">
+      <div v-if="enableAutoAssignment" class="py-3">
         <woot-input
           v-model="maxAssignmentLimit"
           type="number"
