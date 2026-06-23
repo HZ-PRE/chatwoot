@@ -51,6 +51,41 @@ export const isCustomAttributeList = (customAttributes, type) => {
   });
 };
 
+export const isCustomAttributeCheckbox = (customAttributes, type) => {
+  return customAttributes.find(attr => {
+    return (
+      attr.attribute_key === type && attr.attribute_display_type === 'checkbox'
+    );
+  });
+};
+
+export const filterCustomAttributes = customAttributes => {
+  return customAttributes.map(attr => ({
+    key: attr.attribute_key,
+    name: attr.attribute_display_name,
+    type: attr.attribute_display_type,
+  }));
+};
+
+export const getAttributes = (automationTypes, eventName) => {
+  return automationTypes?.[eventName]?.conditions || [];
+};
+
+export const isCustomAttribute = (customAttributes, key) => {
+  return customAttributes.find(attr => attr.key === key);
+};
+
+export const getStandardAttributeInputType = (
+  automationTypes,
+  eventName,
+  attributeKey
+) => {
+  const attribute = getAttributes(automationTypes, eventName).find(
+    item => item.key === attributeKey
+  );
+  return attribute?.inputType || 'plain_text';
+};
+
 export const getOperatorTypes = key => {
   const operatorMap = {
     list: OPERATOR_TYPES_1,
@@ -75,6 +110,26 @@ export const generateCustomAttributeTypes = (customAttributes, type) => {
     };
   });
 };
+
+export const generateCustomAttributes = (
+  conversationAttributes,
+  contactAttributes,
+  conversationLabel,
+  contactLabel
+) => [
+  {
+    key: 'conversation_custom_attribute',
+    name: conversationLabel,
+    disabled: true,
+  },
+  ...conversationAttributes,
+  {
+    key: 'contact_custom_attribute',
+    name: contactLabel,
+    disabled: true,
+  },
+  ...contactAttributes,
+];
 
 const transformCustomAttribute = ({ key, name, customAttributeType }) => {
   return {
@@ -296,6 +351,72 @@ export const getDefaultConditions = eventName => {
 };
 
 export const getDefaultActions = () => DEFAULT_ACTIONS;
+
+export const generateConditionOptions = options =>
+  (options || []).map(({ id, name, title }) => ({
+    id,
+    name: name || title,
+  }));
+
+export const getConditionOptions = ({
+  agents = [],
+  campaigns = [],
+  contacts = [],
+  customAttributes = [],
+  inboxes = [],
+  statusFilterOptions = [],
+  priorityOptions = [],
+  messageTypeOptions = [],
+  teams = [],
+  languages = [],
+  countries = [],
+  type,
+}) =>
+  getConditionDropdownValues(customAttributes, type, {
+    statusFilterOptions,
+    messageTypeFilterOptions: messageTypeOptions,
+    assigneeFilterOptions: agents,
+    teamFilterOptions: teams,
+    priorityFilterOptions: priorityOptions,
+    browserLanguageOptions: languages,
+    countryCodeOptions: countries,
+    inboxFilterOptions: inboxes,
+    campaignFilterOptions: campaigns,
+    labelOptions: contacts,
+  });
+
+export const getActionOptions = ({
+  agents = [],
+  labels = [],
+  teams = [],
+  slaPolicies = [],
+  languages = [],
+  type,
+  addNoneToListFn,
+  priorityOptions = [],
+}) => {
+  const options = getActionDropdownValues(type, {
+    assigneeFilterOptions: agents,
+    teamFilterOptions: teams,
+    labelOptions: labels.map(label => ({
+      id: label.title || label.id,
+      name: label.title || label.name,
+    })),
+    inboxFilterOptions: [],
+  });
+
+  const actionFilterMaps = {
+    change_priority: priorityOptions,
+    assign_sla: slaPolicies,
+    change_language: languages,
+  };
+
+  const resolvedOptions = actionFilterMaps[type] || options;
+  return addNoneToListFn &&
+    ['assign_agent', 'assign_team', 'assign_sla'].includes(type)
+    ? addNoneToListFn(resolvedOptions)
+    : resolvedOptions;
+};
 
 export const getFileName = automation => {
   return automation.file ? automation.file.name : '';

@@ -61,6 +61,7 @@ export default {
       senderNameType: 'friendly',
       businessName: '',
       replyChipsConfig: '',
+      replyChipsError: '',
       locktoSingleConversation: false,
       allowMessagesAfterResolved: true,
       continuityViaEmail: true,
@@ -318,6 +319,20 @@ export default {
     },
     async updateInbox() {
       try {
+        let parsedReplyChips = [];
+
+        if (this.replyChipsConfig) {
+          try {
+            parsedReplyChips = JSON.parse(this.replyChipsConfig);
+          } catch (error) {
+            this.replyChipsError = 'Reply chips JSON is invalid';
+            useAlert(this.replyChipsError);
+            return;
+          }
+        }
+
+        this.replyChipsError = '';
+
         const payload = {
           id: this.currentInboxId,
           name: this.selectedInboxName,
@@ -327,9 +342,7 @@ export default {
           greeting_message: this.greetingMessage || '',
           additional_attributes: {
             ...(this.inbox.additional_attributes || {}),
-            reply_chips: this.replyChipsConfig
-              ? JSON.parse(this.replyChipsConfig)
-              : [],
+            reply_chips: parsedReplyChips,
           },
           portal_id: this.selectedPortalSlug
             ? this.portals.find(
@@ -575,14 +588,16 @@ export default {
               :richtext="!textAreaChannels"
             />
           </div>
-          <woot-input
-            v-if="isAWebWidgetInbox"
-            v-model="replyChipsConfig"
-            class="pb-4"
-            type="textarea"
-            label="Widget reply chips JSON"
-            placeholder="Enter JSON for reply chips"
-          />
+          <div v-if="isAWebWidgetInbox" class="pb-4">
+            <label class="block mb-2 text-sm font-medium text-n-slate-12">Widget reply chips JSON</label>
+            <textarea
+              v-model="replyChipsConfig"
+              rows="8"
+              class="w-full px-3 py-2 border rounded-lg bg-n-background border-n-weak text-n-slate-12"
+              placeholder="Enter JSON for reply chips"
+            />
+          </div>
+
           <label v-if="isAWebWidgetInbox" class="pb-4">
             {{ $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.REPLY_TIME.TITLE') }}
             <select v-model="replyTime">
