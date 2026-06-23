@@ -60,6 +60,7 @@ export default {
       emailCollectEnabled: false,
       senderNameType: 'friendly',
       businessName: '',
+      replyChipsConfig: '',
       locktoSingleConversation: false,
       allowMessagesAfterResolved: true,
       continuityViaEmail: true,
@@ -294,6 +295,13 @@ export default {
         this.emailCollectEnabled = this.inbox.enable_email_collect;
         this.senderNameType = this.inbox.sender_name_type;
         this.businessName = this.inbox.business_name;
+        this.replyChipsConfig = this.inbox.additional_attributes?.reply_chips
+          ? JSON.stringify(
+              this.inbox.additional_attributes.reply_chips,
+              null,
+              2
+            )
+          : '';
         this.allowMessagesAfterResolved =
           this.inbox.allow_messages_after_resolved;
         this.continuityViaEmail = this.inbox.continuity_via_email;
@@ -317,6 +325,12 @@ export default {
           allow_messages_after_resolved: this.allowMessagesAfterResolved,
           greeting_enabled: this.greetingEnabled,
           greeting_message: this.greetingMessage || '',
+          additional_attributes: {
+            ...(this.inbox.additional_attributes || {}),
+            reply_chips: this.replyChipsConfig
+              ? JSON.parse(this.replyChipsConfig)
+              : [],
+          },
           portal_id: this.selectedPortalSlug
             ? this.portals.find(
                 portal => portal.slug === this.selectedPortalSlug
@@ -561,6 +575,14 @@ export default {
               :richtext="!textAreaChannels"
             />
           </div>
+          <woot-input
+            v-if="isAWebWidgetInbox"
+            v-model="replyChipsConfig"
+            class="pb-4"
+            type="textarea"
+            label="Widget reply chips JSON"
+            placeholder="Enter JSON for reply chips"
+          />
           <label v-if="isAWebWidgetInbox" class="pb-4">
             {{ $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.REPLY_TIME.TITLE') }}
             <select v-model="replyTime">

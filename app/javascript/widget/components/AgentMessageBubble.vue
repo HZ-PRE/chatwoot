@@ -73,6 +73,8 @@ export default {
       this.onResponse({
         submittedValues: [selectedOption],
         messageId: this.messageId,
+        selectedReplyText:
+          selectedOption.value || selectedOption.title || this.message,
       });
     },
     onFormSubmit(formValues) {

@@ -4,6 +4,7 @@ import { getContrastingTextColor } from '@chatwoot/utils';
 import CustomButton from 'shared/components/Button.vue';
 import FooterReplyTo from 'widget/components/FooterReplyTo.vue';
 import ChatInputWrap from 'widget/components/ChatInputWrap.vue';
+import InboxReplyChips from 'widget/components/InboxReplyChips.vue';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { sendEmailTranscript } from 'widget/api/conversation';
 import routerMixin from 'widget/mixins/routerMixin';
@@ -16,6 +17,7 @@ export default {
     ChatInputWrap,
     CustomButton,
     FooterReplyTo,
+    InboxReplyChips,
   },
   mixins: [routerMixin],
   data() {
@@ -130,6 +132,7 @@ export default {
       :in-reply-to="inReplyTo"
       @dismiss="inReplyTo = null"
     />
+    <InboxReplyChips :on-send-message="handleSendMessage" />
     <ChatInputWrap
       class="shadow-sm"
       :on-send-message="handleSendMessage"

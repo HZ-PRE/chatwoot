@@ -13,7 +13,7 @@ export const getters = {
 export const actions = {
   update: async (
     { commit, dispatch, getters: { getUIFlags: uiFlags } },
-    { email, messageId, submittedValues }
+    { email, messageId, submittedValues, selectedReplyText }
   ) => {
     if (uiFlags.isUpdating) {
       return;
@@ -36,6 +36,15 @@ export const actions = {
         },
         { root: true }
       );
+
+      if (selectedReplyText) {
+        await dispatch(
+          'conversation/sendMessage',
+          { content: selectedReplyText },
+          { root: true }
+        );
+      }
+
       dispatch('contacts/get', {}, { root: true });
     } catch (error) {
       // Ignore error

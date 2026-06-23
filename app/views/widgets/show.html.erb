@@ -11,6 +11,7 @@
         locale: '<%= @web_widget.account.locale %>',
         websiteName: '<%= @web_widget.inbox.name %>',
         websiteToken: '<%= @web_widget.website_token %>',
+        replyChips: <%= raw((@web_widget.inbox.additional_attributes || {})['reply_chips'].to_json) %>,
         welcomeTagline: <%= @web_widget.welcome_tagline.to_json.html_safe %>,
         welcomeTitle: '<%= @web_widget.welcome_title %>',
         widgetColor: '<%= @web_widget.widget_color %>',
