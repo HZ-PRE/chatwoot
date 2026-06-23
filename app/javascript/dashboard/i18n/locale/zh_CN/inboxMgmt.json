@@ -550,7 +550,7 @@
       "LOCK_TO_SINGLE_CONVERSATION": "锁定到单一对话",
       "LOCK_TO_SINGLE_CONVERSATION_SUB_TEXT": "在此收件箱中启用或禁用同一联系人的多个对话",
       "INBOX_UPDATE_TITLE": "收件箱设置",
-      "INBOX_UPDATE_SUB_TEXT": "更新收件箱设置",
+      "INBOX_UPDATE_SUB_TEXT": "更新收件箱设置", 
       "AUTO_ASSIGNMENT_SUB_TEXT": "启用或禁用添加到此收件箱的代理人自动分配新的会话。",
       "HMAC_VERIFICATION": "用户身份验证",
       "HMAC_DESCRIPTION": "使用这个密钥，您可以生成一个秘密令牌，用于验证您用户的身份",
@@ -583,7 +583,12 @@
     "AUTO_ASSIGNMENT": {
       "MAX_ASSIGNMENT_LIMIT": "自动分配限制",
       "MAX_ASSIGNMENT_LIMIT_RANGE_ERROR": "请输入一个大于0的值",
-      "MAX_ASSIGNMENT_LIMIT_SUB_TEXT": "限制从此收件箱自动分配给代理的对话的最大数量"
+      "MAX_ASSIGNMENT_LIMIT_SUB_TEXT": "限制从此收件箱自动分配给代理的对话的最大数量",
+      "ASSIGNMENT_TYPE":"分配类型",
+      "ASSIGNMENT_TYPE_SUB_TEXT":"选择对话如何分配给代理",
+      "ROUND_ROBIN":"轮询",
+      "FIRST_REPLY":"首次回复",
+      "LAST_REPLY":"最后回复"
     },
     "FACEBOOK_REAUTHORIZE": {
       "TITLE": "重新授权",

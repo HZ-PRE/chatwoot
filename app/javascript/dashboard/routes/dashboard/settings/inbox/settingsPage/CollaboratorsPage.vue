@@ -105,12 +105,12 @@ export default {
         };
         await this.$store.dispatch('inboxes/updateInbox', payload);
         useAlert(
-          this.$t('INBOX_MGMT.SETTINGS_POPUP.AUTO_ASSIGNMENT_SUCCESS_MESSAGE')
+          this.$t('INBOX_MGMT.SETTINGS_POPUP.AGENT_ASSIGNMENT_SUB_TEXT')
         );
       } catch (error) {
         this.setDefaults();
         useAlert(
-          this.$t('INBOX_MGMT.SETTINGS_POPUP.AUTO_ASSIGNMENT_SUCCESS_MESSAGE')
+          this.$t('INBOX_MGMT.SETTINGS_POPUP.AGENT_ASSIGNMENT_SUB_TEXT')
         );
       }
     },
