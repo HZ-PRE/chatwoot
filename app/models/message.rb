@@ -123,8 +123,6 @@ class Message < ApplicationRecord
   belongs_to :conversation, touch: true
   belongs_to :sender, polymorphic: true, optional: true
 
-  after_create_commit :run_reply_auto_assignment
-
   has_many :attachments, dependent: :destroy, autosave: true, before_add: :validate_attachments_limit
   has_one :csat_survey_response, dependent: :destroy_async
   has_many :notifications, as: :primary_actor, dependent: :destroy_async
@@ -268,6 +266,7 @@ class Message < ApplicationRecord
     notify_via_mail
     set_conversation_activity
     dispatch_create_events
+    run_reply_auto_assignment
     send_reply
     execute_message_template_hooks
     update_contact_activity
