@@ -36,12 +36,22 @@ const props = defineProps({
     type: String,
     default: 'Search',
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['select']);
 const [showSearchDropdown, toggleDropdown] = useToggle(false);
 
 const onCloseDropdown = () => toggleDropdown(false);
+const onToggleDropdown = () => {
+  if (props.disabled) {
+    return;
+  }
+  toggleDropdown();
+};
 const onClickSelectItem = value => {
   emit('select', value);
   onCloseDropdown();
@@ -57,7 +67,11 @@ const hasValue = computed(() => {
 
 <template>
   <OnClickOutside @trigger="onCloseDropdown">
-    <div class="relative w-full mb-2" @keyup.esc="onCloseDropdown">
+    <div
+      class="relative w-full mb-2"
+      :class="props.disabled ? 'opacity-60 cursor-not-allowed' : ''"
+      @keyup.esc="onCloseDropdown"
+    >
       <Button
         slate
         outline
@@ -65,9 +79,9 @@ const hasValue = computed(() => {
         :icon="
           showSearchDropdown ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'
         "
-        class="w-full !px-2"
+        :class="props.disabled ? 'pointer-events-none' : 'w-full !px-2'"
         @click="
-          () => toggleDropdown() // ensure that the event is not passed to the button
+          () => onToggleDropdown() // ensure that the event is not passed to the button
         "
       >
         <div class="flex items-center justify-between w-full min-w-0">

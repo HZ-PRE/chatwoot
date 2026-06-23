@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { useElementSize } from '@vueuse/core';
@@ -90,6 +91,19 @@ const hasMultipleInboxes = computed(
 );
 
 const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
+
+const isReplyOverdue = computed(() => {
+  const messages = props.chat?.messages || [];
+  const lastMessage = messages[messages.length - 1];
+  if (!lastMessage) return false;
+  if (currentChat.value.status !== 'open') return false;
+  if (lastMessage.message_type !== 0) return false;
+
+  const lastMessageAt = Number(lastMessage.created_at || 0) * 1000;
+  if (!lastMessageAt) return false;
+
+  return differenceInMinutes(Date.now(), lastMessageAt) >= 10;
+});
 </script>
 
 <template>
@@ -134,6 +148,9 @@ const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
           class="flex items-center gap-2 overflow-hidden text-xs conversation--header--actions text-ellipsis whitespace-nowrap"
         >
           <InboxName v-if="hasMultipleInboxes" :inbox="inbox" class="!mx-0" />
+          <span v-if="isReplyOverdue" class="font-medium text-ruby-10">
+            {{ $t('CONVERSATION.HEADER.REPLY_OVERDUE') }}
+          </span>
           <span v-if="isSnoozed" class="font-medium text-n-amber-10">
             {{ snoozedDisplayText }}
           </span>

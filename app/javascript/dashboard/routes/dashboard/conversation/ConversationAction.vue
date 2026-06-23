@@ -74,6 +74,14 @@ export default {
     canManuallyAssign() {
       return this.inbox?.enable_auto_assignment === true;
     },
+    isRoundRobinAssignment() {
+      return (
+        this.inbox?.auto_assignment_config?.assignment_type === 'round_robin'
+      );
+    },
+    canSelectAssignee() {
+      return this.canManuallyAssign && this.isRoundRobinAssignment;
+    },
     hasAnAssignedTeam() {
       return !!this.currentChat?.meta?.team;
     },
@@ -222,7 +230,7 @@ export default {
       >
         <template #button>
           <NextButton
-            v-if="showSelfAssign"
+            v-if="showSelfAssign && isRoundRobinAssignment"
             link
             xs
             icon="i-lucide-arrow-right"
@@ -235,6 +243,7 @@ export default {
       <MultiselectDropdown
         :options="agentsList"
         :selected-item="assignedAgent"
+        :disabled="!canSelectAssignee"
         :multiselector-title="$t('AGENT_MGMT.MULTI_SELECTOR.TITLE.AGENT')"
         :multiselector-placeholder="$t('AGENT_MGMT.MULTI_SELECTOR.PLACEHOLDER')"
         :no-search-result="

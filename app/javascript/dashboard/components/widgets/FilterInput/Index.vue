@@ -1,10 +1,12 @@
 <script>
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import TagInput from 'dashboard/components-next/taginput/TagInput.vue';
 
 export default {
   name: 'FilterInput',
   components: {
     NextButton,
+    TagInput,
   },
   props: {
     modelValue: {
@@ -54,6 +56,29 @@ export default {
   },
   emits: ['update:modelValue', 'removeFilter', 'resetFilter'],
   computed: {
+    shouldHideValueInput() {
+      return ['is_present', 'is_not_present'].includes(this.filterOperator);
+    },
+    shouldUseTagInput() {
+      return (
+        this.custom_attribute_type === 'contact_attribute' &&
+        ['contains', 'does_not_contain'].includes(this.filterOperator)
+      );
+    },
+    normalizedTagValues: {
+      get() {
+        if (Array.isArray(this.values)) {
+          return this.values.filter(Boolean);
+        }
+        if (!this.values) {
+          return [];
+        }
+        return [this.values].filter(Boolean);
+      },
+      set(value) {
+        this.values = value;
+      },
+    },
     attributeKey: {
       get() {
         if (!this.modelValue) return null;
@@ -135,6 +160,23 @@ export default {
         ? 'bg-n-ruby-8/20 border-n-ruby-5 dark:border-n-ruby-5'
         : 'bg-n-background border-n-weak dark:border-n-weak';
     },
+    getOperatorLabel(operatorValue) {
+      const operatorTranslationMap = {
+        equal_to: 'FILTER.OPERATOR_LABELS.equal_to',
+        not_equal_to: 'FILTER.OPERATOR_LABELS.not_equal_to',
+        contains: 'FILTER.OPERATOR_LABELS.contains',
+        does_not_contain: 'FILTER.OPERATOR_LABELS.does_not_contain',
+        is_present: 'FILTER.OPERATOR_LABELS.is_present',
+        is_not_present: 'FILTER.OPERATOR_LABELS.is_not_present',
+        is_greater_than: 'FILTER.OPERATOR_LABELS.is_greater_than',
+        is_less_than: 'FILTER.OPERATOR_LABELS.is_less_than',
+        days_before: 'FILTER.OPERATOR_LABELS.days_before',
+        starts_with: 'FILTER.OPERATOR_LABELS.starts_with',
+      };
+
+      // eslint-disable-next-line @intlify/vue-i18n/no-dynamic-keys
+      return this.$t(operatorTranslationMap[operatorValue]);
+    },
   },
 };
 </script>
@@ -190,13 +232,23 @@ export default {
             :key="o"
             :value="operator.value"
           >
-            {{ $t(`FILTER.OPERATOR_LABELS.${operator.value}`) }}
+            {{ getOperatorLabel(operator.value) }}
           </option>
         </select>
 
-        <div v-if="showUserInput" class="flex-grow mr-1 filter__answer--wrap">
+        <div
+          v-if="showUserInput && !shouldHideValueInput"
+          class="flex-grow mr-1 filter__answer--wrap"
+        >
+          <div v-if="shouldUseTagInput" class="w-full">
+            <TagInput
+              v-model="normalizedTagValues"
+              :placeholder="$t('FILTER.INPUT_PLACEHOLDER')"
+              allow-create
+            />
+          </div>
           <div
-            v-if="inputType === 'multi_select'"
+            v-else-if="inputType === 'multi_select'"
             class="multiselect-wrap--small"
           >
             <multiselect

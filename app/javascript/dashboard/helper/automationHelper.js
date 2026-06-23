@@ -1,7 +1,7 @@
 import {
   OPERATOR_TYPES_1,
-  OPERATOR_TYPES_3,
   OPERATOR_TYPES_4,
+  OPERATOR_TYPES_7,
 } from 'dashboard/routes/dashboard/settings/automation/operators';
 import {
   DEFAULT_MESSAGE_CREATED_CONDITION,
@@ -43,16 +43,8 @@ export const getCustomAttributeListDropdownValues = (
     });
 };
 
-export const isCustomAttributeCheckbox = (customAttributes, key) => {
-  return customAttributes.find(attr => {
-    return (
-      attr.attribute_key === key && attr.attribute_display_type === 'checkbox'
-    );
-  });
-};
-
 export const isCustomAttributeList = (customAttributes, type) => {
-  return customAttributes.find(attr => {
+  return customAttributes.some(attr => {
     return (
       attr.attribute_key === type && attr.attribute_display_type === 'list'
     );
@@ -62,9 +54,9 @@ export const isCustomAttributeList = (customAttributes, type) => {
 export const getOperatorTypes = key => {
   const operatorMap = {
     list: OPERATOR_TYPES_1,
-    text: OPERATOR_TYPES_3,
+    text: OPERATOR_TYPES_7,
     number: OPERATOR_TYPES_1,
-    link: OPERATOR_TYPES_1,
+    link: OPERATOR_TYPES_7,
     date: OPERATOR_TYPES_4,
     checkbox: OPERATOR_TYPES_1,
   };
@@ -84,54 +76,104 @@ export const generateCustomAttributeTypes = (customAttributes, type) => {
   });
 };
 
-export const generateConditionOptions = (options, key = 'id') => {
-  if (!options || !Array.isArray(options)) return [];
-  return options.map(i => {
+const transformCustomAttribute = ({ key, name, customAttributeType }) => {
+  return {
+    key,
+    name,
+    inputType: 'plain_text',
+    filterOperators: OPERATOR_TYPES_1,
+    customAttributeType,
+  };
+};
+
+export const transformCustomAttributes = customAttributes => {
+  return {
+    conversationAttributes: customAttributes.conversationAttributes.map(attr =>
+      transformCustomAttribute({
+        ...attr,
+        customAttributeType: 'conversation_attribute',
+      })
+    ),
+    contactAttributes: customAttributes.contactAttributes.map(attr =>
+      transformCustomAttribute({
+        ...attr,
+        customAttributeType: 'contact_attribute',
+      })
+    ),
+  };
+};
+
+export const getActionTypes = actionTypes => {
+  return actionTypes.map(action => {
     return {
-      id: i[key],
-      name: i.title,
+      key: action.key,
+      name: action.name,
+      inputType: action.inputType,
+      inputOptions: action.inputOptions,
     };
   });
 };
 
-export const getActionOptions = ({
-  agents,
-  teams,
-  labels,
-  slaPolicies,
-  type,
-  addNoneToListFn,
-  priorityOptions,
-}) => {
-  const actionsMap = {
-    assign_agent: addNoneToListFn ? addNoneToListFn(agents) : agents,
-    assign_team: addNoneToListFn ? addNoneToListFn(teams) : teams,
-    send_email_to_team: teams,
-    add_label: generateConditionOptions(labels, 'title'),
-    remove_label: generateConditionOptions(labels, 'title'),
-    change_priority: priorityOptions,
-    add_sla: slaPolicies,
-  };
-  return actionsMap[type];
+export const getConditionTypes = automationTypes => {
+  return automationTypes.map(condition => {
+    return {
+      key: condition.key,
+      name: condition.name,
+      inputType: condition.inputType,
+      filterOperators: condition.filterOperators,
+      customAttributeType: condition.customAttributeType || '',
+    };
+  });
 };
 
-export const getConditionOptions = ({
-  agents,
-  booleanFilterOptions,
-  campaigns,
-  contacts,
-  countries,
+export const getConditionValueInputType = (customAttributes, type) => {
+  if (type === 'status') return 'search_select';
+  if (type === 'message_type') return 'search_select';
+  if (type === 'assignee_id') return 'search_select';
+  if (type === 'team_id') return 'search_select';
+  if (type === 'priority') return 'search_select';
+  if (type === 'conversation_status') return 'search_select';
+  if (type === 'browser_language') return 'search_select';
+  if (type === 'country_code') return 'search_select';
+  if (type === 'referer') return 'search_select';
+  if (type === 'mail_to') return 'search_select';
+  if (type === 'label') return 'multi_select';
+  if (type === 'campaign_id') return 'search_select';
+  if (type === 'inbox_id') return 'search_select';
+  if (type === 'phone_number') return 'plain_text';
+
+  if (isCustomAttributeList(customAttributes, type)) {
+    return 'search_select';
+  }
+
+  const customAttribute = isACustomAttribute(customAttributes, type);
+  if (customAttribute) {
+    return getCustomAttributeInputType(customAttribute.attribute_display_type);
+  }
+
+  return 'plain_text';
+};
+
+export const getConditionDropdownValues = (
   customAttributes,
-  inboxes,
-  languages,
-  statusFilterOptions,
-  teams,
   type,
-  priorityOptions,
-  messageTypeOptions,
-}) => {
-  if (isCustomAttributeCheckbox(customAttributes, type)) {
-    return booleanFilterOptions;
+  {
+    statusFilterOptions = [],
+    messageTypeFilterOptions = [],
+    assigneeFilterOptions = [],
+    teamFilterOptions = [],
+    priorityFilterOptions = [],
+    browserLanguageOptions = [],
+    countryCodeOptions = [],
+    refererOptions = [],
+    mailToOptions = [],
+    inboxFilterOptions = [],
+    campaignFilterOptions = [],
+    labelOptions = [],
+  } = {}
+) => {
+  if (type === 'conversation_status') {
+    return statusFilterOptions;
   }
 
   if (isCustomAttributeList(customAttributes, type)) {
@@ -140,29 +182,107 @@ export const getConditionOptions = ({
 
   const conditionFilterMaps = {
     status: statusFilterOptions,
-    assignee_id: agents,
-    contact: contacts,
-    inbox_id: inboxes,
-    team_id: teams,
-    campaigns: generateConditionOptions(campaigns),
-    browser_language: languages,
-    conversation_language: languages,
-    country_code: countries,
-    message_type: messageTypeOptions,
-    priority: priorityOptions,
+    message_type: messageTypeFilterOptions,
+    assignee_id: assigneeFilterOptions,
+    team_id: teamFilterOptions,
+    priority: priorityFilterOptions,
+    browser_language: browserLanguageOptions,
+    country_code: countryCodeOptions,
+    referer: refererOptions,
+    mail_to: mailToOptions,
+    inbox_id: inboxFilterOptions,
+    campaign_id: campaignFilterOptions,
+    label: labelOptions,
   };
 
-  return conditionFilterMaps[type];
+  return conditionFilterMaps[type] || [];
 };
 
-export const getFileName = (action, files = []) => {
-  const blobId = action.action_params[0];
-  if (!blobId) return '';
-  if (action.action_name === 'send_attachment') {
-    const file = files.find(item => item.blob_id === blobId);
-    if (file) return file.filename.toString();
+export const getActionDropdownValues = (
+  type,
+  {
+    assigneeFilterOptions = [],
+    teamFilterOptions = [],
+    inboxFilterOptions = [],
+    labelOptions = [],
+  } = {}
+) => {
+  const actionFilterMaps = {
+    assign_team: teamFilterOptions,
+    assign_agent: assigneeFilterOptions,
+    add_label: labelOptions,
+    remove_label: labelOptions,
+    send_email_transcript: inboxFilterOptions,
+  };
+
+  return actionFilterMaps[type] || [];
+};
+
+export const getAutomationType = (automationTypes, automation, key) => {
+  return automationTypes.find(item => {
+    return item.key === (key || automation.attribute_key);
+  });
+};
+
+export const getInputType = (
+  customAttributes,
+  automationTypes,
+  automation,
+  mode,
+  key
+) => {
+  if (mode === 'edit') {
+    const customAttribute = isACustomAttribute(customAttributes, key);
+    if (customAttribute) {
+      return getCustomAttributeInputType(
+        customAttribute.attribute_display_type
+      );
+    }
   }
-  return '';
+  const type = getAutomationType(automationTypes, automation, key);
+  return type.inputType;
+};
+
+export const getOperators = (
+  customAttributes,
+  automationTypes,
+  automation,
+  mode,
+  key
+) => {
+  if (mode === 'edit') {
+    const customAttribute = isACustomAttribute(customAttributes, key);
+    if (customAttribute) {
+      return getOperatorTypes(customAttribute.attribute_display_type);
+    }
+  }
+  const type = getAutomationType(automationTypes, automation, key);
+  return type.filterOperators;
+};
+
+export const getCustomAttributeType = (
+  automationTypes,
+  automation,
+  key,
+  mode,
+  customAttributes
+) => {
+  if (mode === 'edit') {
+    const customAttribute = isACustomAttribute(customAttributes, key);
+    if (customAttribute) {
+      return automation.custom_attribute_type || '';
+    }
+  }
+  const type = getAutomationType(automationTypes, automation, key);
+  return type.customAttributeType || '';
+};
+
+export const generateAutomationPayload = automation => {
+  return {
+    ...automation,
+    conditions: filterQueryGenerator(automation.conditions),
+    actions: actionQueryGenerator(automation.actions),
+  };
 };
 
 export const getDefaultConditions = eventName => {
@@ -175,162 +295,21 @@ export const getDefaultConditions = eventName => {
   return DEFAULT_OTHER_CONDITION;
 };
 
-export const getDefaultActions = () => {
-  return DEFAULT_ACTIONS;
+export const getDefaultActions = () => DEFAULT_ACTIONS;
+
+export const getFileName = automation => {
+  return automation.file ? automation.file.name : '';
 };
 
-export const filterCustomAttributes = customAttributes => {
-  return customAttributes.map(attr => {
-    return {
-      key: attr.attribute_key,
-      name: attr.attribute_display_name,
-      type: attr.attribute_display_type,
-    };
-  });
-};
-
-export const getStandardAttributeInputType = (automationTypes, event, key) => {
-  return automationTypes[event].conditions.find(item => item.key === key)
-    .inputType;
-};
-
-export const generateAutomationPayload = payload => {
-  const automation = JSON.parse(JSON.stringify(payload));
-  automation.conditions[automation.conditions.length - 1].query_operator = null;
-  automation.conditions = filterQueryGenerator(automation.conditions).payload;
-  automation.actions = actionQueryGenerator(automation.actions);
-  return automation;
-};
-
-export const isCustomAttribute = (attrs, key) => {
-  return attrs.find(attr => attr.key === key);
-};
-
-export const generateCustomAttributes = (
-  // eslint-disable-next-line default-param-last
-  conversationAttributes = [],
-  // eslint-disable-next-line default-param-last
-  contactAttributes = [],
-  conversationlabel,
-  contactlabel
-) => {
-  const customAttributes = [];
-  if (conversationAttributes.length) {
-    customAttributes.push(
-      {
-        key: `conversation_custom_attribute`,
-        name: conversationlabel,
-        disabled: true,
-      },
-      ...conversationAttributes
-    );
-  }
-  if (contactAttributes.length) {
-    customAttributes.push(
-      {
-        key: `contact_custom_attribute`,
-        name: contactlabel,
-        disabled: true,
-      },
-      ...contactAttributes
-    );
-  }
-  return customAttributes;
-};
-
-/**
- * Get attributes for a given key from automation types.
- * @param {Object} automationTypes - Object containing automation types.
- * @param {string} key - The key to get attributes for.
- * @returns {Array} Array of condition objects for the given key.
- */
-export const getAttributes = (automationTypes, key) => {
-  return automationTypes[key].conditions;
-};
-
-/**
- * Get the automation type for a given key.
- * @param {Object} automationTypes - Object containing automation types.
- * @param {Object} automation - The automation object.
- * @param {string} key - The key to get the automation type for.
- * @returns {Object} The automation type object.
- */
-export const getAutomationType = (automationTypes, automation, key) => {
-  return automationTypes[automation.event_name].conditions.find(
-    condition => condition.key === key
-  );
-};
-
-/**
- * Get the input type for a given key.
- * @param {Array} allCustomAttributes - Array of all custom attributes.
- * @param {Object} automationTypes - Object containing automation types.
- * @param {Object} automation - The automation object.
- * @param {string} key - The key to get the input type for.
- * @returns {string} The input type.
- */
-export const getInputType = (
-  allCustomAttributes,
-  automationTypes,
-  automation,
-  key
-) => {
-  const customAttribute = isACustomAttribute(allCustomAttributes, key);
-  if (customAttribute) {
-    return getCustomAttributeInputType(customAttribute.attribute_display_type);
-  }
-  const type = getAutomationType(automationTypes, automation, key);
-  return type.inputType;
-};
-
-/**
- * Get operators for a given key.
- * @param {Array} allCustomAttributes - Array of all custom attributes.
- * @param {Object} automationTypes - Object containing automation types.
- * @param {Object} automation - The automation object.
- * @param {string} mode - The mode ('edit' or other).
- * @param {string} key - The key to get operators for.
- * @returns {Array} Array of operators.
- */
-export const getOperators = (
-  allCustomAttributes,
-  automationTypes,
-  automation,
-  mode,
-  key
-) => {
-  if (mode === 'edit') {
-    const customAttribute = isACustomAttribute(allCustomAttributes, key);
-    if (customAttribute) {
-      return getOperatorTypes(customAttribute.attribute_display_type);
-    }
-  }
-  const type = getAutomationType(automationTypes, automation, key);
-  return type.filterOperators;
-};
-
-/**
- * Get the custom attribute type for a given key.
- * @param {Object} automationTypes - Object containing automation types.
- * @param {Object} automation - The automation object.
- * @param {string} key - The key to get the custom attribute type for.
- * @returns {string} The custom attribute type.
- */
-export const getCustomAttributeType = (automationTypes, automation, key) => {
-  return automationTypes[automation.event_name].conditions.find(
-    i => i.key === key
-  ).customAttributeType;
-};
-
-/**
- * Determine if an action input should be shown.
- * @param {Array} automationActionTypes - Array of automation action type objects.
- * @param {string} action - The action to check.
- * @returns {boolean} True if the action input should be shown, false otherwise.
- */
-export const showActionInput = (automationActionTypes, action) => {
-  if (action === 'send_email_to_team' || action === 'send_message')
+export const showActionInput = (automationActionTypes, actionType) => {
+  if (
+    ['send_email_to_team', 'send_message', 'send_webhook_event'].includes(
+      actionType
+    )
+  ) {
     return false;
-  const type = automationActionTypes.find(i => i.key === action).inputType;
-  return !!type;
+  }
+
+  const type = automationActionTypes.find(action => action.key === actionType);
+  return !!type?.inputType;
 };

@@ -1,5 +1,6 @@
 <script>
 import { mapGetters } from 'vuex';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
 import { getLastMessage } from 'dashboard/helper/conversationHelper';
 import Thumbnail from '../Thumbnail.vue';
 import MessagePreview from './MessagePreview.vue';
@@ -91,6 +92,17 @@ export default {
     };
   },
   computed: {
+    isReplyOverdue() {
+      const lastMessage = this.lastMessageInChat;
+      if (!lastMessage) return false;
+      if (this.chat.status !== 'open') return false;
+      if (lastMessage.message_type !== 0) return false;
+
+      const lastMessageAt = Number(lastMessage.created_at || 0) * 1000;
+      if (!lastMessageAt) return false;
+
+      return differenceInMinutes(Date.now(), lastMessageAt) >= 10;
+    },
     ...mapGetters({
       currentChat: 'getSelectedChat',
       inboxesList: 'inboxes/getInboxes',
@@ -338,7 +350,7 @@ export default {
         <span
           class="unread shadow-lg rounded-full hidden text-xxs font-semibold h-4 leading-4 ltr:ml-auto rtl:mr-auto mt-1 min-w-[1rem] px-1 py-0 text-center text-white bg-n-teal-9"
         >
-          {{ unreadCount > 9 ? '9+' : unreadCount }}
+          {{ unreadCount > 9 ? `${9}+` : unreadCount }}
         </span>
       </div>
       <CardLabels :conversation-labels="chat.labels" class="mt-0.5 mx-2 mb-0">
