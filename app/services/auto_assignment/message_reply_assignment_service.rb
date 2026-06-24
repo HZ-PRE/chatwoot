@@ -39,7 +39,12 @@ class AutoAssignment::MessageReplyAssignmentService
   end
 
   def assign_to_sender(strategy)
-    return unless assignable_sender?
+    unless assignable_sender?
+      Rails.logger.info(
+        "[AUTO_ASSIGNMENT_REPLY] message_id=#{message.id} conversation_id=#{conversation.id} action=skip reason=sender_not_assignable sender_id=#{message.sender_id} sender_type=#{message.sender_type} assignable_agent_ids=#{assignable_agent_ids.inspect}"
+      )
+      return
+    end
 
     Rails.logger.info(
       "[AUTO_ASSIGNMENT_REPLY] message_id=#{message.id} conversation_id=#{conversation.id} strategy=#{strategy} assigning_to=#{message.sender_id}"
@@ -55,7 +60,7 @@ class AutoAssignment::MessageReplyAssignmentService
   def assignable_sender?
     return false unless message.sender.present?
     return false unless message.sender_type == 'User'
-    return false unless inbox_member_ids.include?(message.sender_id)
+    return false unless assignable_agent_ids.include?(message.sender_id)
 
     true
   end
@@ -69,8 +74,8 @@ class AutoAssignment::MessageReplyAssignmentService
     config['assignment_type'] || 'round_robin'
   end
 
-  def inbox_member_ids
-    @inbox_member_ids ||= conversation.inbox.members.ids
+  def assignable_agent_ids
+    @assignable_agent_ids ||= conversation.inbox.assignable_agents.map(&:id)
   end
 
   def conversation
