@@ -86,7 +86,7 @@ export default {
           v-for="chip in replyChips"
           :key="chip.id || chip.label"
           type="button"
-          class="max-w-full px-4 py-2 text-sm leading-5 text-left transition bg-white border rounded-full shadow-sm text-n-slate-12 border-n-slate-3 hover:bg-n-slate-1 dark:bg-n-solid-2 dark:border-n-solid-3 dark:text-n-slate-12 dark:hover:bg-n-solid-3"
+          class="max-w-full px-4 py-2 text-sm leading-5 text-left transition bg-white border rounded-full shadow-sm text-n-slate-12 border-n-slate-3 hover:bg-white dark:bg-white dark:border-n-slate-3 dark:text-n-slate-12 dark:hover:bg-white"
           @click="onClickChip(chip)"
         >
           <span class="break-words">{{ chip.label }}</span>
