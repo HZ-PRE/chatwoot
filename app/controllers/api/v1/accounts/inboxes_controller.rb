@@ -43,10 +43,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
 
   def update
     inbox_params = permitted_params.except(:channel, :csat_config)
-    # Serialize additional_attributes Hash to JSON string for varchar column
-    if inbox_params[:additional_attributes].present?
-      inbox_params[:additional_attributes] = inbox_params[:additional_attributes].to_json
-    end
+    inbox_params[:additional_attributes] = additional_attributes_params if params[:additional_attributes].present?
     inbox_params[:csat_config] = format_csat_config(permitted_params[:csat_config]) if permitted_params[:csat_config].present?
     @inbox.update!(inbox_params)
     update_inbox_working_hours
@@ -142,11 +139,20 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
     }
   end
 
+  def additional_attributes_params
+    raw_attributes = params[:additional_attributes]
+    return JSON.parse(raw_attributes) if raw_attributes.is_a?(String)
+    return raw_attributes.permit!.to_h if raw_attributes.respond_to?(:permit!)
+
+    raw_attributes || {}
+  rescue JSON::ParserError
+    {}
+  end
+
   def inbox_attributes
     [:name, :avatar, :greeting_enabled, :greeting_message, :enable_email_collect, :csat_survey_enabled,
      :enable_auto_assignment, :working_hours_enabled, :out_of_office_message, :timezone, :allow_messages_after_resolved,
      :lock_to_single_conversation, :portal_id, :sender_name_type, :business_name,
-     { additional_attributes: {} },
      { csat_config: [:display_type, :message, { survey_rules: [:operator, { values: [] }] }] },
      { auto_assignment_config: [:max_assignment_limit, :assignment_type] }]
   end

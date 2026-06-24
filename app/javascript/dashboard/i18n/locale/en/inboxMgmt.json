@@ -96,6 +96,9 @@
           "ENABLED": "Enabled",
           "DISABLED": "Disabled"
         },
+        "REPLY_CHIPS": {
+          "LABEL": "Widget reply chips JSON"
+        },
         "REPLY_TIME": {
           "TITLE": "Set Reply time",
           "IN_A_FEW_MINUTES": "In a few minutes",

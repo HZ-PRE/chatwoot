@@ -350,7 +350,11 @@ export default {
             ...(() => {
               let attrs = this.inbox.additional_attributes || {};
               if (typeof attrs === 'string') {
-                try { attrs = JSON.parse(attrs); } catch { attrs = {}; }
+                try {
+                  attrs = JSON.parse(attrs);
+                } catch {
+                  attrs = {};
+                }
               }
               return attrs;
             })(),
@@ -601,7 +605,9 @@ export default {
             />
           </div>
           <div v-if="isAWebWidgetInbox" class="pb-4">
-            <label class="block mb-2 text-sm font-medium text-n-slate-12">Widget reply chips JSON</label>
+            <label class="block mb-2 text-sm font-medium text-n-slate-12">
+              {{ $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.REPLY_CHIPS.LABEL') }}
+            </label>
             <textarea
               v-model="replyChipsConfig"
               rows="8"

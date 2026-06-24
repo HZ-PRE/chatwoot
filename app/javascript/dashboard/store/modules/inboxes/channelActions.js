@@ -3,11 +3,20 @@ import InboxesAPI from '../../../api/inboxes';
 import AnalyticsHelper from '../../../helper/AnalyticsHelper';
 import { ACCOUNT_EVENTS } from '../../../helper/AnalyticsHelper/events';
 
+const appendFormDataValue = (formData, key, value) => {
+  if (key === 'additional_attributes' && value && typeof value === 'object') {
+    formData.append(key, JSON.stringify(value));
+    return;
+  }
+
+  formData.append(key, value);
+};
+
 export const buildInboxData = inboxParams => {
   const formData = new FormData();
   const { channel = {}, ...inboxProperties } = inboxParams;
   Object.keys(inboxProperties).forEach(key => {
-    formData.append(key, inboxProperties[key]);
+    appendFormDataValue(formData, key, inboxProperties[key]);
   });
   const { selectedFeatureFlags, ...channelParams } = channel;
   // selectedFeatureFlags needs to be empty when creating a website channel
