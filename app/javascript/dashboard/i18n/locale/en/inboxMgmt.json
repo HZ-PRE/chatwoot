@@ -97,8 +97,8 @@
           "DISABLED": "Disabled"
         },
         "REPLY_CHIPS": {
-          "LABEL": "自动回复标签（客户点击标签后，会自动发送对应文字内容）",
-          "HELP_TEXT": "请按 JSON 数组格式配置：label 是客户看到的标签文字，replyText 是点击后自动发送的消息内容。下面已提供默认示例，可直接修改。",
+          "LABEL": "Widget reply chips JSON",
+          "HELP_TEXT": "Please configure in JSON array format: label is the text customers see on the label, replyText is the message content sent automatically after clicking. The default example below can be modified directly.",
           "PLACEHOLDER": "Enter JSON for reply chips"
         },
         "REPLY_TIME": {

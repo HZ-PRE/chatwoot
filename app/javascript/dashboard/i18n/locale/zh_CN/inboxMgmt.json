@@ -96,6 +96,11 @@
           "ENABLED": "已启用",
           "DISABLED": "已禁用"
         },
+        "REPLY_CHIPS": {
+          "LABEL": "自动回复标签（客户点击标签后，会自动发送对应文字内容）",
+          "HELP_TEXT": "请按 JSON 数组格式配置：label 是客户看到的标签文字，replyText 是点击后自动发送的消息内容。下面已提供默认示例，可直接修改。",
+          "PLACEHOLDER": "输入JSON以回复标签"
+        },
         "REPLY_TIME": {
           "TITLE": "设置回复时间",
           "IN_A_FEW_MINUTES": "几分钟前",
