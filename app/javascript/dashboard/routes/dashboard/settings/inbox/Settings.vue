@@ -26,6 +26,25 @@ import { INBOX_TYPES } from 'dashboard/helper/inbox';
 import { WIDGET_BUILDER_EDITOR_MENU_OPTIONS } from 'dashboard/constants/editor';
 import Editor from 'dashboard/components-next/Editor/Editor.vue';
 
+const DEFAULT_REPLY_CHIPS_CONFIG = JSON.stringify(
+  [
+    {
+      label: '售前咨询',
+      replyText: '您好，我想了解产品价格和购买方式',
+    },
+    {
+      label: '售后服务',
+      replyText: '您好，我需要售后服务帮助',
+    },
+    {
+      label: '联系人工',
+      replyText: '请帮我转接人工客服',
+    },
+  ],
+  null,
+  2
+);
+
 export default {
   components: {
     BotConfiguration,
@@ -307,7 +326,7 @@ export default {
           }
           return additionalAttributes?.reply_chips
             ? JSON.stringify(additionalAttributes.reply_chips, null, 2)
-            : '';
+            : DEFAULT_REPLY_CHIPS_CONFIG;
         })();
         this.allowMessagesAfterResolved =
           this.inbox.allow_messages_after_resolved;
@@ -608,11 +627,16 @@ export default {
             <label class="block mb-2 text-sm font-medium text-n-slate-12">
               {{ $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.REPLY_CHIPS.LABEL') }}
             </label>
+            <p class="pb-2 text-sm not-italic text-n-slate-11">
+              {{ $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.REPLY_CHIPS.HELP_TEXT') }}
+            </p>
             <textarea
               v-model="replyChipsConfig"
               rows="8"
-              class="w-full px-3 py-2 border rounded-lg bg-n-background border-n-weak text-n-slate-12"
-              placeholder="Enter JSON for reply chips"
+              class="w-full px-3 py-2 font-mono text-sm border rounded-lg bg-n-background border-n-weak text-n-slate-12"
+              :placeholder="
+                $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.REPLY_CHIPS.PLACEHOLDER')
+              "
             />
           </div>
 
