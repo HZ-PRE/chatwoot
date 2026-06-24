@@ -223,14 +223,18 @@ export default {
 
 <template>
   <div class="bg-n-background">
-    <div v-if="canManuallyAssign" class="multiselect-wrap--small">
+    <div class="multiselect-wrap--small">
       <ContactDetailsItem
         compact
         :title="$t('CONVERSATION_SIDEBAR.ASSIGNEE_LABEL')"
       >
         <template #button>
           <NextButton
-            v-if="!showSelfAssign || (showSelfAssign && isRoundRobinAssignment)"
+            v-if="
+              !canManuallyAssign ||
+              (canManuallyAssign &&
+                (!showSelfAssign || (showSelfAssign && isRoundRobinAssignment)))
+            "
             link
             xs
             icon="i-lucide-arrow-right"

@@ -81,7 +81,7 @@ export default {
 <template>
   <div>
     <div v-if="hasReplyChips" class="px-4 pt-2 pb-1 bg-transparent">
-      <div class="flex flex-wrap gap-2 justify-start">
+      <div class="flex flex-wrap gap-2 justify-end">
         <button
           v-for="chip in replyChips"
           :key="chip.id || chip.label"
