@@ -172,8 +172,27 @@ export default {
           });
       },
     },
+    showSelfAssign() {
+      if (!this.assignedAgent) {
+        return true;
+      }
+      if (this.assignedAgent.id !== this.currentUser.id) {
+        return true;
+      }
+      return false;
+    },
+    isRoundRobinAssignment() {
+      return (
+        this.inbox?.auto_assignment_config?.assignment_type === 'round_robin'
+      );
+    },
     showSelfAssignBanner() {
-      if (this.message !== '' && !this.isOnPrivateNote) {
+      if (
+        this.message !== '' &&
+        !this.isOnPrivateNote &&
+        this.showSelfAssign &&
+        this.isRoundRobinAssignment
+      ) {
         if (!this.assignedAgent) {
           return true;
         }

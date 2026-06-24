@@ -230,7 +230,7 @@ export default {
       >
         <template #button>
           <NextButton
-            v-if="showSelfAssign && isRoundRobinAssignment"
+            v-if="!showSelfAssign || (showSelfAssign && isRoundRobinAssignment)"
             link
             xs
             icon="i-lucide-arrow-right"
