@@ -5,23 +5,18 @@ class AutoAssignment::FirstReplyAssignmentService
   # Priority:
   # 1. First outgoing reply in the current conversation
   # 2. First outgoing reply across this contact's conversation history in the inbox
-  # 3. Fallback to round-robin
+  # 3. Leave unassigned until the first reply happens
   pattr_initialize [:conversation!, :allowed_agent_ids!]
 
   def find_assignee
     agent = first_reply_agent
-    if agent.present?
-      Rails.logger.info(
-        "[AUTO_ASSIGNMENT] service=first_reply conversation_id=#{conversation.id} strategy=matched candidate_user_id=#{agent.id}"
-      )
-      return agent
-    end
+    return agent if agent.present?
 
     Rails.logger.info(
-      "[AUTO_ASSIGNMENT] service=first_reply conversation_id=#{conversation.id} strategy=fallback_round_robin allowed_online_agent_ids=#{allowed_online_agent_ids.inspect}"
+      "[AUTO_ASSIGNMENT] service=first_reply conversation_id=#{conversation.id} action=skip reason=no_matching_reply"
     )
 
-    round_robin_service.available_agent(allowed_agent_ids: allowed_online_agent_ids)
+    nil
   end
 
   private
@@ -59,7 +54,7 @@ class AutoAssignment::FirstReplyAssignmentService
 
   def matching_agent_id_from_messages(messages)
     messages.each do |message|
-      next unless allowed_agent_id_set.include?(message.sender_id)
+      next unless allowed_agent_id_set.include?(message.sender_id.to_s)
 
       return message.sender_id
     end
@@ -67,11 +62,7 @@ class AutoAssignment::FirstReplyAssignmentService
   end
 
   def allowed_agent_id_set
-    @allowed_agent_id_set ||= allowed_agent_ids.to_set
-  end
-
-  def allowed_online_agent_ids
-    online_agent_ids & allowed_agent_ids&.map(&:to_s)
+    @allowed_agent_id_set ||= allowed_agent_ids.map(&:to_s).to_set
   end
 
   def online_agent_ids
@@ -83,10 +74,6 @@ class AutoAssignment::FirstReplyAssignmentService
 
   def online_agent_id_set
     @online_agent_id_set ||= online_agent_ids.to_set
-  end
-
-  def round_robin_service
-    @round_robin_service ||= AutoAssignment::InboxRoundRobinService.new(inbox: conversation.inbox)
   end
 
   def inbox_member(user_id)
