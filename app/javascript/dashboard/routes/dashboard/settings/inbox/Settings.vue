@@ -296,13 +296,19 @@ export default {
         this.emailCollectEnabled = this.inbox.enable_email_collect;
         this.senderNameType = this.inbox.sender_name_type;
         this.businessName = this.inbox.business_name;
-        this.replyChipsConfig = this.inbox.additional_attributes?.reply_chips
-          ? JSON.stringify(
-              this.inbox.additional_attributes.reply_chips,
-              null,
-              2
-            )
-          : '';
+        this.replyChipsConfig = (() => {
+          let additionalAttributes = this.inbox.additional_attributes;
+          if (typeof additionalAttributes === 'string') {
+            try {
+              additionalAttributes = JSON.parse(additionalAttributes);
+            } catch {
+              additionalAttributes = {};
+            }
+          }
+          return additionalAttributes?.reply_chips
+            ? JSON.stringify(additionalAttributes.reply_chips, null, 2)
+            : '';
+        })();
         this.allowMessagesAfterResolved =
           this.inbox.allow_messages_after_resolved;
         this.continuityViaEmail = this.inbox.continuity_via_email;
@@ -341,7 +347,13 @@ export default {
           greeting_enabled: this.greetingEnabled,
           greeting_message: this.greetingMessage || '',
           additional_attributes: {
-            ...(this.inbox.additional_attributes || {}),
+            ...(() => {
+              let attrs = this.inbox.additional_attributes || {};
+              if (typeof attrs === 'string') {
+                try { attrs = JSON.parse(attrs); } catch { attrs = {}; }
+              }
+              return attrs;
+            })(),
             reply_chips: parsedReplyChips,
           },
           portal_id: this.selectedPortalSlug

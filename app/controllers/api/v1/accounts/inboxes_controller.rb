@@ -43,6 +43,10 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
 
   def update
     inbox_params = permitted_params.except(:channel, :csat_config)
+    # Serialize additional_attributes Hash to JSON string for varchar column
+    if inbox_params[:additional_attributes].present?
+      inbox_params[:additional_attributes] = inbox_params[:additional_attributes].to_json
+    end
     inbox_params[:csat_config] = format_csat_config(permitted_params[:csat_config]) if permitted_params[:csat_config].present?
     @inbox.update!(inbox_params)
     update_inbox_working_hours
