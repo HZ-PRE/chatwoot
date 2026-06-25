@@ -176,8 +176,17 @@ export const actions = {
     }
   },
 
-  resolveConversation: async () => {
+  resolveConversation: async ({ dispatch, rootGetters }) => {
     await toggleStatus();
+    // Optimistically update conversationAttributes so the UI responds
+    // immediately (ChatFooter hides the reply box) without waiting for
+    // the ActionCable round-trip
+    const { id } = rootGetters['conversationAttributes/getConversationParams'];
+    dispatch(
+      'conversationAttributes/update',
+      { id, status: 'resolved' },
+      { root: true }
+    );
   },
 
   setCustomAttributes: async (_, customAttributes = {}) => {

@@ -10,6 +10,7 @@ import { sendEmailTranscript } from 'widget/api/conversation';
 import routerMixin from 'widget/mixins/routerMixin';
 import { IFrameHelper } from '../helpers/utils';
 import { CHATWOOT_ON_START_CONVERSATION } from '../constants/sdkEvents';
+import { CONVERSATION_STATUS } from 'shared/constants/messages';
 import { emitter } from 'shared/helpers/mitt';
 
 export default {
@@ -39,7 +40,9 @@ export default {
     hideReplyBox() {
       const { allowMessagesAfterResolved } = window.chatwootWebChannel;
       const { status } = this.conversationAttributes;
-      return !allowMessagesAfterResolved && status === 'resolved';
+      return (
+        !allowMessagesAfterResolved && status === CONVERSATION_STATUS.RESOLVED
+      );
     },
     showEmailTranscriptButton() {
       return this.hasEmail;

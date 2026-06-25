@@ -22,7 +22,9 @@ export const actions = {
       commit(SET_CONVERSATION_ATTRIBUTES, data);
       commit('conversation/setMetaUserLastSeenAt', lastSeen, { root: true });
     } catch (error) {
-      // Ignore error
+      // API may fail when no conversation exists yet (e.g. first visit)
+      // ActionCable events (conversation.created / status_changed) will
+      // populate the store when the real data becomes available
     }
   },
   update({ commit }, data) {
@@ -39,7 +41,10 @@ export const mutations = {
     $state.status = data.status;
   },
   [UPDATE_CONVERSATION_ATTRIBUTES]($state, data) {
-    if (data.id === $state.id) {
+    // Allow update when state is not yet initialized (! $state.id)
+    // so ActionCable events arriving before the initial API call
+    // are not silently dropped
+    if (data.id === $state.id || !$state.id) {
       $state.id = data.id;
       $state.status = data.status;
     }
