@@ -34,6 +34,10 @@
       window.chatwootPubsubToken = '<%= @contact_inbox.pubsub_token %>'
       window.authToken = '<%= @token %>'
       window.globalConfig = <%= raw @global_config.to_json %>
+      window.globalConfig['BRAND_NAME']="智能客服"
+      if(window.chatwootWebChannel.portal){
+	      window.globalConfig['WIDGET_BRAND_URL']=`/hc/${window.chatwootWebChannel.portal['slug']}/${window.chatwootWebChannel.portal['config']?.default_locale}`
+      }
     </script>
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'widget' %>

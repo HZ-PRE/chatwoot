@@ -565,6 +565,7 @@
     "AVG_FIRST_RESPONSE_TIME": "平均首次响应时间",
     "AVG_REPLY_TIME": "平均客户等待时间",
     "RESOLUTION_COUNT": "已解决的数量",
-    "CONVERSATIONS": "会话数量"
+    "CONVERSATIONS": "会话数量",
+    "SENT_MESSAGES": "发送的消息数"
   }
 }
