@@ -94,6 +94,7 @@ en:
       avg_resolution_time: Avg resolution time
       resolution_count: Resolution Count
       avg_customer_waiting_time: Avg customer waiting time
+      sent_messages_count: Sent messages
     inbox_csv:
       inbox_name: Inbox name
       inbox_type: Inbox type

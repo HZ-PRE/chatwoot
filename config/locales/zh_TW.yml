@@ -80,6 +80,7 @@ zh_TW:
       avg_resolution_time: Avg resolution time
       resolution_count: 已解決的數量
       avg_customer_waiting_time: Avg customer waiting time
+      sent_messages_count: 发送的消息数量
     inbox_csv:
       inbox_name: 收件匣名稱
       inbox_type: 收件匣類型
@@ -100,6 +101,7 @@ zh_TW:
       avg_resolution_time: Avg resolution time
       resolution_count: 已解決的數量
       avg_customer_waiting_time: Avg customer waiting time
+      sent_messages_count: 发送的消息数量
     conversation_traffic_csv:
       timezone: Timezone
     sla_csv:
@@ -311,12 +313,16 @@ zh_TW:
     button: 開啟對話
   time_units:
     days:
+      one: '%{count} day'
       other: '%{count} days'
     hours:
+      one: '%{count} hour'
       other: '%{count} hours'
     minutes:
+      one: '%{count} minute'
       other: '%{count} minutes'
     seconds:
+      one: '%{count} second'
       other: '%{count} seconds'
   automation:
     system_name: 'Automation System'

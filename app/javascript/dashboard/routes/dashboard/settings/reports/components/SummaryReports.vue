@@ -90,6 +90,11 @@ const columns = computed(() => [
     width: 200,
     cell: defaulSpanRender,
   }),
+  columnHelper.accessor('sentMessagesCount', {
+    header: t('SUMMARY_REPORTS.SENT_MESSAGES'),
+    width: 200,
+    cell: defaulSpanRender,
+  }),
 ]);
 
 const renderAvgTime = value => (value ? formatTime(value) : '--');
@@ -105,6 +110,7 @@ const tableData = computed(() =>
       avgResolutionTime,
       avgReplyTime,
       resolvedConversationsCount,
+      sentMessagesCount,
     } = rowMetrics;
     return {
       id: row.id,
@@ -116,6 +122,7 @@ const tableData = computed(() =>
       avgReplyTime: renderAvgTime(avgReplyTime),
       avgResolutionTime: renderAvgTime(avgResolutionTime),
       resolutionsCount: renderCount(resolvedConversationsCount),
+      sentMessagesCount: renderCount(sentMessagesCount),
     };
   })
 );
