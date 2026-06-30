@@ -23,6 +23,7 @@ class V2::Reports::AgentSummaryBuilder < V2::Reports::BaseSummaryBuilder
   def fetch_sent_messages_count
     account.messages.outgoing
            .where(sender_type: 'User', created_at: range)
+           .unscope(:order)
            .group(:sender_id)
            .count
   end
